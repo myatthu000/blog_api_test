@@ -24,7 +24,7 @@ class CategoryUpdateRequest extends FormRequest
     public function rules()
     {
         return [
-            'title'=> 'min:3|unique:categories,title',
+            'title'=> 'min:3|unique:categories,id',
         ];
     }
 }

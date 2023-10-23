@@ -22,7 +22,8 @@ class CategoryResource extends JsonResource
             'title' => $this->title,
             'slug' => $this->slug,
             'uuid' => $this->uuid,
-            'user' => new UserResource($this->user),
+//            'user' => new UserResource($this->user),
+            'username' =>$this->user->name,
             'created_at' => $this->created_at->diffForHumans(),
             'updated_at' => $this->updated_at->format('d-M-Y'),
         ];

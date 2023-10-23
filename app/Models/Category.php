@@ -24,12 +24,9 @@ class Category extends Model
 //        return 'uuid';
 //    }
 
+
     public function user(){
         return $this->belongsTo(User::class,"user_id");
     }
 
-//    public function setSlugAttribute()
-//    {
-//        return $this->attributes['slug'] = Str::slug($this->title);
-//    }
 }

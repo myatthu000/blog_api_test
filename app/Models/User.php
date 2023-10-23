@@ -6,6 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Auth;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
@@ -21,6 +22,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'uuid',
     ];
 
     /**
@@ -44,6 +46,30 @@ class User extends Authenticatable
 
     public function categories(){
         return $this->hasMany(Category::class);
+    }
+
+    public function posts(){
+        return $this->hasMany(Post::class);
+    }
+
+    public function isAdmin(){
+        return $this->role === 'admin';
+    }
+
+    public function isEditor(){
+        return $this->role === 'editor';
+    }
+
+    public function isAuthor(){
+        return $this->role === 'author';
+    }
+
+    public function isBand(){
+        return $this->freeze_action === 1; //can access actions
+    }
+
+    public function isAuthenticated(){
+        return Auth::check();
     }
 
 }

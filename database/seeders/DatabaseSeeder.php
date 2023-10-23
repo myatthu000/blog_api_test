@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
              'name' => 'admin',
              'uuid' => fake()->uuid(),
              'email' => 'admin@gmail.com',
+             'role' => 'admin',
              'password' => Hash::make('password'),
              'email_verified_at' => now(),
              'remember_token' => Str::random(10),

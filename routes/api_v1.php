@@ -22,8 +22,12 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+
 Route::apiResource('category', CategoryController::class);
-//Route::apiResource('post', PostController::class);
+Route::apiResource('post', PostController::class);
+
+
+
 Route::get('user',function (){
     return UserResource::collection(User::all());
 });

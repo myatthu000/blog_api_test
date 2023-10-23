@@ -10,14 +10,16 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 
 class CategoryController extends Controller
 {
     public function index(){
 
-        $categories = Category::latest('id')
+        $categories = Category::query()->latest('id')
             ->with(['user'])
             ->paginate(3)
             ->withQueryString()
@@ -27,7 +29,7 @@ class CategoryController extends Controller
     }
 
     public function store(CategoryStoreRequest $request){
-
+//        Gate::authorize('create',Category::class);
         try {
             DB::beginTransaction();
             $category = Category::query()->create([
@@ -50,8 +52,8 @@ class CategoryController extends Controller
         }
     }
 
-
     public function show(Category $category){
+//        Gate::authorize('view',$category);
 
         return response()->json([
             'data' => new CategoryResource($category),
@@ -59,7 +61,7 @@ class CategoryController extends Controller
     }
 
     public function update(CategoryUpdateRequest $request, Category $category){
-
+        Gate::authorize('update',$category);
         try {
             DB::beginTransaction();
             $category->update([
@@ -82,6 +84,7 @@ class CategoryController extends Controller
 
     public function destroy(Category $category){
 
+//        Gate::authorize('delete',$category);
         $category->delete();
 
         return response()->json([

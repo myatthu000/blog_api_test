@@ -48,8 +48,13 @@ class User extends Authenticatable
         return $this->hasMany(Category::class);
     }
 
+    // In User model
     public function posts(){
         return $this->hasMany(Post::class);
+    }
+
+    public function post(){
+        return $this->hasOne(Post::class);
     }
 
     public function isAdmin(){
@@ -62,6 +67,10 @@ class User extends Authenticatable
 
     public function isAuthor(){
         return $this->role === 'author';
+    }
+
+    public function isUser(){
+        return $this->role === 'user';
     }
 
     public function isBand(){

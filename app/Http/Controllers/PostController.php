@@ -6,22 +6,38 @@ use App\Http\Requests\StorePostRequest;
 use App\Http\Requests\UpdatePostRequest;
 use App\Http\Resources\PostResource;
 use App\Models\Post;
+use App\Models\User;
+use App\Notifications\NewPostNotification;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use function Symfony\Component\HttpFoundation\Session\Storage\Handler\commit;
 
 class PostController extends Controller
 {
+    public function onePost(){
+
+        $data = [];
+//        $post = Post::query()->find(1)->get();
+//        foreach ($post->users() as $user){
+//            $data[] = $user;
+//        }
+        return $data;
+    }
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection | JsonResponse
+     * @return AnonymousResourceCollection | JsonResponse
      */
+
+
     public function index()
     {
 
@@ -41,8 +57,8 @@ class PostController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse
+     * @param Request $request
+     * @return JsonResponse
      */
     public function store(StorePostRequest $request)
     {
@@ -53,11 +69,10 @@ class PostController extends Controller
             if ($request->hasFile('feature_image')){
                 $file = $request->file('feature_image');
                 $newName = uniqid().'_feature_image_.'.$file->getClientOriginalExtension();
-                $auth_id = '3';
+                $auth_id = Auth::id();
                 Storage::putFileAs('public/'.$auth_id.'/feature_image',$file,$newName);
                 $feature_image_name = $newName;
             }
-
 
             $post = Post::query()->create([
                 'title' => $request->title,
@@ -65,16 +80,25 @@ class PostController extends Controller
                 'uuid' => Str::uuid(),
                 'slug' => Str::slug($request->title),
                 'excerpt' => Str::words($request->description,7,' >>>'),
-                'user_id' =>  3,
+                'user_id' =>  Auth::id(),
                 'category_id' => $request->category_id,
                 'feature_image' => $feature_image_name,
             ]);
-            DB:commit();
+
+            $roleToFilter = 'user';
+            $subscribers = User::query()->where('role',"like", $roleToFilter)->get();
+//            $subscribers = $post->users()->where('role', 'like', $roleToFilter)->get();
+            foreach ($subscribers as $subscriber) {
+                Log::debug($subscriber);
+                auth()->user()->notify(new NewPostNotification($subscriber));
+            }
+
+            DB::commit();
             return response()->json([
                 'message' => 'New Post is recorded',
                 'data' => new PostResource($post),
             ],201);
-        }catch (\Exception $exception){
+        }catch (Exception $exception){
             DB::rollBack();
             return response()->json([
                 'error' => 'Fail to create New Post',
@@ -87,7 +111,7 @@ class PostController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Post  $post
+     * @param Post $post
      * @return JsonResponse
      */
     public function show(Post $post){
@@ -101,8 +125,8 @@ class PostController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Post  $post
+     * @param Request $request
+     * @param Post $post
      * @return JsonResponse
      */
     public function update(UpdatePostRequest $request, Post $post)
@@ -117,7 +141,7 @@ class PostController extends Controller
 
                 $file = $request->file('feature_image');
                 $newName = uniqid().'_feature_image_.'.$file->getClientOriginalExtension();
-                $auth_id = '3';
+                $auth_id = $post->user_id;
                 Storage::putFileAs('public/'.$auth_id.'/feature_image',$file,$newName);
                 $feature_image_name = $newName;
             }
@@ -149,7 +173,7 @@ class PostController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Post  $post
+     * @param Post $post
      * @return JsonResponse
      */
     public function destroy(Post $post)

@@ -36,7 +36,7 @@ class CategoryController extends Controller
                 'title' => $request->title,
                 'uuid' => (string) Str::uuid(),
                 'slug' => Str::slug($request->title),
-                'user_id' => 1,
+                'user_id' => Auth::id(),
             ]);
             DB::commit();
             return response()->json([
@@ -67,6 +67,7 @@ class CategoryController extends Controller
             $category->update([
                 'title' => $request->title,
                 'slug' => Str::slug($request->title),
+                'user_id' => $category->user_id,
             ]);
             DB::commit();
             return response()->json([

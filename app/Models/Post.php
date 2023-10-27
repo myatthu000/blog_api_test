@@ -16,15 +16,20 @@ class Post extends Model
 //    protected $with = ['users','category'];
 
     public function user(){
-        return $this->belongsTo(User::class,'user_id');
+        return $this->belongsTo(User::class);
     }
 
+    public function users(){
+        return $this->belongsToMany(User::class);
+    }
+
+
     public function category(){
-        return $this->belongsTo(Category::class,'category_id');
+        return $this->belongsTo(Category::class);
     }
 
     public function categories(){
-        return $this->hasMany(Category::class);
+        return $this->belongsToMany(Category::class);
     }
 
     public function scopeSearch($query){

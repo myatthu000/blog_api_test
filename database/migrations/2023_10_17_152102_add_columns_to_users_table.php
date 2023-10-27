@@ -15,9 +15,11 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             $table->uuid('uuid');
+            $table->string("phone_number")->nullable();
             $table->enum('role',['admin','editor','author','user'])->default('author');
+//            $table->enum('notification',['subscribed','unsubscribed'])->default('unsubscribed');
             $table->enum('freeze_action',[1,-1])->default(1);
-            $table->string('avatar')->default('/storage/default_avatar/avatar.png');
+            $table->string('avatar')->default('storage/default_avatar/avatar.png');
         });
     }
 

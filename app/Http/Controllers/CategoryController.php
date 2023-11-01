@@ -17,10 +17,18 @@ use Illuminate\Support\Str;
 
 class CategoryController extends Controller
 {
+    public function __construct()
+    {
+        return $this->middleware(['auth:sanctum']);
+    }
+
     public function index(){
 
         $categories = Category::query()->latest('id')
             ->with(['user'])
+            ->when(Auth::user()->isAuthor(),function ($q){
+                $q->where('user_id',Auth::id());
+            })
             ->paginate(3)
             ->withQueryString()
         ;

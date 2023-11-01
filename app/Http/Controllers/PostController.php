@@ -22,6 +22,12 @@ use function Symfony\Component\HttpFoundation\Session\Storage\Handler\commit;
 
 class PostController extends Controller
 {
+
+    public function __construct()
+    {
+        return $this->middleware(['auth:sanctum']);
+    }
+
     public function onePost(){
 
         $data = [];
@@ -42,16 +48,42 @@ class PostController extends Controller
     {
 
         $posts = Post::query()->latest('id')
-//            ->when(Auth::user()->isAuthor(),function ($query){
-//                $query->where('user_id',Auth::id());
-//            })
+            ->when(Auth::user()->isAuthor(),function ($query){
+                $query->where('user_id',Auth::id());
+            })
+            ->when(request('trash'),function ($q){
+                $q->onlyTrashed();
+            })
             ->search()
             ->with(['user','category'])
-            ->paginate(3)
+            ->paginate(7)
             ->withQueryString()
         ;
 
         return PostResource::collection($posts);
+    }
+
+    /**
+     *
+     * @return JsonResponse
+     */
+
+    public function trashes()
+    {
+        $deletedPostCount = Post::onlyTrashed()->count();
+        $posts = Post::latest("id")
+            ->when(Auth::user()->isAuthor(),function ($q){
+                $q->where('user_id',Auth::id());
+            })
+            ->onlyTrashed()
+            ->with(['category','user'])
+            ->paginate(7)
+            ->withQueryString();
+
+        return response()->json([
+            'data' => $posts,
+            'deletePostCount' => $deletedPostCount,
+        ]);
     }
 
     /**
@@ -89,8 +121,8 @@ class PostController extends Controller
             $subscribers = User::query()->where('role',"like", $roleToFilter)->get();
 //            $subscribers = $post->users()->where('role', 'like', $roleToFilter)->get();
             foreach ($subscribers as $subscriber) {
-                Log::debug($subscriber);
-                auth()->user()->notify(new NewPostNotification($subscriber));
+//                Log::debug($subscriber);
+                auth()->user()->notify(new NewPostNotification($subscriber,$post));
             }
 
             DB::commit();
@@ -179,7 +211,7 @@ class PostController extends Controller
     public function destroy(Post $post)
     {
 
-//        Gate::authorize('delete',$post);
+        Gate::authorize('delete',$post);
         if ($post->feature_image) {
             $path = '/public/' . $post->user_id . '/feature_image/' . $post->feature_image;
             Storage::delete($path);
@@ -190,5 +222,47 @@ class PostController extends Controller
             'message' => 'Post is deleted',
         ]);
 
+    }
+
+    public function restore($post)
+    {
+        $post = Post::onlyTrashed()->findOrFail($post);
+        Gate::authorize('restore',$post);
+        $title=$post->title;
+        $post->restore();
+
+        return response()->json([
+            "status"=>$title." is restore successfully"
+        ]);
+    }
+
+    public function forceDelete($post)
+    {
+        $post = Post::onlyTrashed()->findOrFail($post);
+        Gate::authorize('forceDelete',$post);
+        try {
+            DB::beginTransaction();
+            $title = $post->title;
+
+            if ($post->feature_image) {
+                $path = '/public/' . $post->user_id . '/feature_image/' . $post->feature_image;
+                Storage::delete($path);
+            }
+
+            $post->forceDelete();
+            DB::commit();
+
+        }catch (\Exception $error){
+            DB::rollBack();
+            return response()->json([
+                "error"=> "-->".$error->getMessage()
+            ]);
+        }
+//        $paginator = Post::paginate($this->defaultPaginateCount())->withQueryString();
+//        $redirectToPage = (request("page") <= $paginator->lastPage()) ? request('page') : $paginator->lastPage();
+
+        return response()->json([
+            "message"=>$title." is deleted successfully"
+        ]);
     }
 }

@@ -48,7 +48,7 @@ class PostController extends Controller
     {
 
         $posts = Post::query()->latest('id')
-            ->when(Auth::user()->isAuthor(),function ($query){
+            ->when(Auth::user()->isAuthor() || Auth::user()->isUser(),function ($query){
                 $query->where('user_id',Auth::id());
             })
             ->when(request('trash'),function ($q){

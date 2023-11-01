@@ -26,8 +26,8 @@ class CategoryController extends Controller
 
         $categories = Category::query()->latest('id')
             ->with(['user'])
-            ->when(Auth::user()->isAuthor(),function ($q){
-                $q->where('user_id',Auth::id());
+            ->when(Auth::user()->isAuthor() || Auth::user()->isUser(),function ($query){
+                $query->where('user_id',Auth::id());
             })
             ->paginate(3)
             ->withQueryString()

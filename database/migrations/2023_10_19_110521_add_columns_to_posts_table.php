@@ -15,6 +15,7 @@ return new class extends Migration
     {
         Schema::table('posts', function (Blueprint $table) {
 //            $table->json();
+            $table->softDeletes();
         });
     }
 
@@ -26,6 +27,7 @@ return new class extends Migration
     public function down()
     {
         Schema::table('posts', function (Blueprint $table) {
+            $table->softDeletes();
             $table->dropIfExists();
         });
     }

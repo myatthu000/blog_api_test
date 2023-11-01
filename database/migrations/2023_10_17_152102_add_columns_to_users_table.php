@@ -17,7 +17,7 @@ return new class extends Migration
             $table->uuid('uuid');
             $table->string("phone_number")->nullable();
             $table->enum('role',['admin','editor','author','user'])->default('author');
-//            $table->enum('notification',['subscribed','unsubscribed'])->default('unsubscribed');
+            $table->enum('subscriber',['subscribed','unsubscribed'])->default('subscribed');
             $table->enum('freeze_action',[1,-1])->default(1);
             $table->string('avatar')->default('storage/default_avatar/avatar.png');
         });

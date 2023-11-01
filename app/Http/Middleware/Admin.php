@@ -4,9 +4,8 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
-class isBand
+class Admin
 {
     /**
      * Handle an incoming request.
@@ -17,15 +16,11 @@ class isBand
      */
     public function handle(Request $request, Closure $next)
     {
-        if (!(\auth()->user()->isAdmin())){
-            if (\auth()->check() && !(\auth()->user()->isBand()) ){
-
-                return response()->json([
-                    'error' => 'Account is under control. Contact to website Administrators.',
-                ],403);
-            }
+        if (! $request->user()->isAdmin()){
+            return response()->json([
+                'error' => 'Need to access Administrators.',
+            ],403);
         }
-
         return $next($request);
     }
 }

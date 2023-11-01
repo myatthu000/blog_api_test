@@ -14,14 +14,16 @@ class NewPostNotification extends Notification
     use Queueable;
 
     public $user;
+    public $post;
     /**
      * Create a new notification instance.
      *
      * @return void
      */
-    public function __construct($user)
+    public function __construct($user, $post)
     {
         $this->user = $user;
+        $this->post = $post;
     }
 
     /**
@@ -57,11 +59,16 @@ class NewPostNotification extends Notification
      */
     public function toArray($notifiable)
     {
-        $post_url = '';
+
+//        $post_url = $this->post['id'];
         return [
             'user_id' => $this->user['id'],
             'email' => $this->user['email'],
-            'url' => $post_url,
+            'post' => [
+                'id' => $this->post['id'],
+                'title' => $this->post['title'],
+                'slug' => $this->post['slug'],
+            ],
         ];
     }
 }

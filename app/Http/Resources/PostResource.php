@@ -25,7 +25,7 @@ class PostResource extends JsonResource
             'excerpt' => $this->excerpt,
             'slug' => $this->slug,
             'category' => $this->category->title,
-            'username' => $this->user->name,
+            'username' => $this->user,
             'created_at' => $this->created_at->diffForHumans(),
             'updated_at' => $this->updated_at->format('d-M-Y'),
             'feature_image' =>  $this->feature_image != null ? asset("storage/".$this->user_id."/feature_image/".$this->feature_image) : $this->feature_image,

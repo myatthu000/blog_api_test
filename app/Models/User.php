@@ -23,6 +23,8 @@ class User extends Authenticatable
         'email',
         'password',
         'uuid',
+        'subscriber',
+        'freeze_account',
     ];
 
     /**
@@ -74,7 +76,7 @@ class User extends Authenticatable
     }
 
     public function isBand(){
-        return $this->freeze_action === 1; //can access actions
+        return $this->freeze_action !== -1; //can access actions
     }
 
     public function isAuthenticated(){

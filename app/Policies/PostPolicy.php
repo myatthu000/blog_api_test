@@ -83,7 +83,7 @@ class PostPolicy
      */
     public function restore(User $user, Post $post)
     {
-        //
+        return $user->id == $post->user_id;
     }
 
     /**
@@ -95,6 +95,6 @@ class PostPolicy
      */
     public function forceDelete(User $user, Post $post)
     {
-        //
+        return $user->id == $post->user_id;
     }
 }
